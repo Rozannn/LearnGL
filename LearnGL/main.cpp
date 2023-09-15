@@ -66,17 +66,19 @@ int main()
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
 	//vertex attribute
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 	// —’…´ Ù–‘
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(5 * sizeof(float)));
+	glEnableVertexAttribArray(2);
 	//light source buffer
 	unsigned int lightingVAO;
 	glGenVertexArrays(1, &lightingVAO);
 	glBindVertexArray(lightingVAO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
 
@@ -139,7 +141,7 @@ int main()
 
 	//coordinates
 	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(0.0f, 1.0f, 1.0f));
 	glm::mat4 view = glm::mat4(1.0f);
 	view = ourCamera.GetViewMatrix();
 	glm::mat4 projection = glm::mat4(1.0f);
@@ -152,6 +154,8 @@ int main()
 	lightingShader.setMat4f("model", model);
 	lightingShader.setMat4f("view", view);
 	lightingShader.setMat4f("projection", projection);
+	lightingShader.setVec3("lightPos", lightPos);
+	lightingShader.setVec3("viewPos", ourCamera.Position);
 	glm::mat4 lightmodel = glm::mat4(1.0f);
 	lightmodel = glm::translate(lightmodel, lightPos);
 	lightmodel = glm::scale(lightmodel, glm::vec3(0.2f));
@@ -183,13 +187,19 @@ int main()
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 		lightingShader.setMat4f("view", view);
 		lightingShader.setMat4f("projection", projection);
+		lightingShader.setVec3("lightPos", lightPos);
 
-
+		glm::mat4 lightmodel = glm::mat4(1.0f);
+	    lightPos.x = 1.2f * sin(glfwGetTime()) * 4.0f;
+        lightPos.z = 2.0f * cos(glfwGetTime()) * 4.0f;
+		lightmodel = glm::translate(lightmodel, lightPos);
+		lightmodel = glm::scale(lightmodel, glm::vec3(0.2f));
 		sourceShader.use();
 		glBindVertexArray(lightingVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 		sourceShader.setMat4f("view", view);
 		sourceShader.setMat4f("projection", projection);
+		sourceShader.setMat4f("model", lightmodel);
 
 		glfwPollEvents();
 		glfwSwapBuffers(window);
