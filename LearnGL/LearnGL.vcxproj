@@ -162,7 +162,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\shader\fragment.sd" />
+    <None Include="..\shader\lightvertex.sd" />
+    <None Include="..\shader\sourcefragment.sd" />
     <None Include="..\shader\vertex.sd" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\shader\lightfragment.sd" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

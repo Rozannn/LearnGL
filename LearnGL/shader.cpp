@@ -34,7 +34,7 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath)
     const char* vShaderCode = vertexCode.c_str();
     const char* fShaderCode = fragmentCode.c_str();
 
-    std::cout << vShaderCode << std::endl;
+
     // 2. ±àÒë×ÅÉ«Æ÷
     unsigned int vertex, fragment;
     int success;
@@ -100,4 +100,8 @@ void Shader::setFloat(const std::string& name, float value) const
 void  Shader::setMat4f(const std::string& name, glm::mat4 value) const
 {
     glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, glm::value_ptr(value));
+}
+void  Shader::setVec3(const std::string& name, float x, float y, float z) const
+{
+    glUniform3f(glGetUniformLocation(ID, name.c_str()), x, y, z);
 }

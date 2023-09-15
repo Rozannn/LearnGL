@@ -22,6 +22,7 @@ float lastX = 400, lastY = 300;
 bool firstMouse = true;
 float deltaTime;
 float lastTime;
+glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
 
 int main()
 {
@@ -55,7 +56,7 @@ int main()
 	glViewport(0, 0, screenWidth, screenHeight);
 	
 
-
+	//object buffer
 	unsigned int VAO, VBO;
 	glGenBuffers(1, &VBO);
 	glGenVertexArrays(1, &VAO);
@@ -64,13 +65,19 @@ int main()
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-	//position
+	//vertex attribute
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 	// 颜色属性
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
-	
+	//light source buffer
+	unsigned int lightingVAO;
+	glGenVertexArrays(1, &lightingVAO);
+	glBindVertexArray(lightingVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
 
 
 	//shader
@@ -79,7 +86,15 @@ int main()
 	ourShader.setInt("texture1", 0);
 	ourShader.setInt("texture2", 1);
 
-	//texture
+	//lightingShader
+	Shader lightingShader("../shader/lightvertex.sd", "../shader/lightfragment.sd");
+	lightingShader.use();
+	lightingShader.setVec3("objectColor", 1.0f, 0.5f, 0.31f);
+	lightingShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
+
+	//sourceShader
+	Shader sourceShader("../shader/lightvertex.sd", "../shader/sourcefragment.sd");
+
 	stbi_set_flip_vertically_on_load(true);
 	unsigned int texture1, texture2;
 	glGenTextures(1, &texture1);
@@ -124,17 +139,26 @@ int main()
 
 	//coordinates
 	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 	glm::mat4 view = glm::mat4(1.0f);
 	view = ourCamera.GetViewMatrix();
 	glm::mat4 projection = glm::mat4(1.0f);
 	projection = glm::perspective(glm::radians(ourCamera.Zoom), screenWidth / screenHeight, 0.1f, 100.0f);
-	ourShader.setMat4f("model", model);
-	ourShader.setMat4f("view", view);
-	ourShader.setMat4f("projection", projection);
-
-
-
+	//ourShader.use();
+	//ourShader.setMat4f("model", model);
+	//ourShader.setMat4f("view", view);
+	//ourShader.setMat4f("projection", projection);
+	lightingShader.use();
+	lightingShader.setMat4f("model", model);
+	lightingShader.setMat4f("view", view);
+	lightingShader.setMat4f("projection", projection);
+	glm::mat4 lightmodel = glm::mat4(1.0f);
+	lightmodel = glm::translate(lightmodel, lightPos);
+	lightmodel = glm::scale(lightmodel, glm::vec3(0.2f));
+	sourceShader.use();
+	sourceShader.setMat4f("model", lightmodel);
+	sourceShader.setMat4f("view", view);
+	sourceShader.setMat4f("projection", projection);
 	glEnable(GL_DEPTH_TEST);
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
@@ -148,29 +172,25 @@ int main()
 		glBindTexture(GL_TEXTURE_2D, texture1);
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, texture2);
-		ourShader.use();
 
-		
+
+		lightingShader.use();
 		glBindVertexArray(VAO);
-
 		glm::mat4 view = glm::mat4(1.0f);
 		view = ourCamera.GetViewMatrix();
 		glm::mat4 projection = glm::mat4(1.0f);
 		projection = glm::perspective(glm::radians(ourCamera.Zoom), screenWidth / screenHeight, 0.1f, 100.0f);
-		for (int i = 0; i < 10; i++)
-		{
-			glm::mat4 model = glm::mat4(1.0f);
-			model = glm::translate(model, cubePositions[i]);
-			float angle = 20.0f * i;
-			if ((i+1) % 3 == 0 || i == 0)
-				angle += glfwGetTime() * glm::radians(1000.0f);
-			model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-			ourShader.setMat4f("model", model);
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-		}
-		ourShader.setMat4f("view", view);
-		ourShader.setMat4f("projection", projection);
-		/*	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);*/
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		lightingShader.setMat4f("view", view);
+		lightingShader.setMat4f("projection", projection);
+
+
+		sourceShader.use();
+		glBindVertexArray(lightingVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		sourceShader.setMat4f("view", view);
+		sourceShader.setMat4f("projection", projection);
+
 		glfwPollEvents();
 		glfwSwapBuffers(window);
 		float currentTime = glfwGetTime();
@@ -203,6 +223,7 @@ void processInput(GLFWwindow* window)
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 		ourCamera.ProcessKeyboard(RIGHT, deltaTime);
 }
+
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
 	if (firstMouse) // 这个bool变量初始时是设定为true的
