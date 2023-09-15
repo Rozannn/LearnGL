@@ -155,9 +155,6 @@ int main()
 	lightingShader.setMat4f("model", model);
 	lightingShader.setMat4f("view", view);
 	lightingShader.setMat4f("projection", projection);
-	lightingShader.setVec3("lightPos", lightPos);
-	lightingShader.setVec3("viewPos", ourCamera.Position);
-
 	glm::mat4 lightmodel = glm::mat4(1.0f);
 	lightmodel = glm::translate(lightmodel, lightPos);
 	lightmodel = glm::scale(lightmodel, glm::vec3(0.2f));
