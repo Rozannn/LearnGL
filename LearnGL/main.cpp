@@ -91,7 +91,7 @@ int main()
 	//lightingShader
 	Shader lightingShader("../shader/lightvertex.sd", "../shader/lightfragment.sd");
 	lightingShader.use();
-	lightingShader.setVec3("objectColor", 1.0f, 0.5f, 0.31f);
+	lightingShader.setVec3("objectColor", 1.0f, 1.0f, 1.0f);
 	lightingShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
 	lightingShader.setInt("texture1", 0);
 	lightingShader.setInt("texture2", 1);
@@ -164,7 +164,7 @@ int main()
 	sourceShader.setMat4f("projection", projection);
 	glEnable(GL_DEPTH_TEST);
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
+	lightingShader.setVec3("viewPos", ourCamera.Position);
 	while (!glfwWindowShouldClose(window))
 	{
 		processInput(window);
@@ -187,7 +187,7 @@ int main()
 		lightingShader.setMat4f("view", view);
 		lightingShader.setMat4f("projection", projection);
 		lightingShader.setVec3("lightPos", lightPos);
-
+		lightingShader.setVec3("viewPos", ourCamera.Position);
 		glm::mat4 lightmodel = glm::mat4(1.0f);
 	    lightPos.x = 1.2f * sin(glfwGetTime()) * 4.0f;
         lightPos.z = 2.0f * cos(glfwGetTime()) * 4.0f;
