@@ -93,16 +93,19 @@ int main()
 	lightingShader.use();
 	lightingShader.setVec3("objectColor", 1.0f, 1.0f, 1.0f);
 	lightingShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
-	lightingShader.setInt("texture1", 0);
-	lightingShader.setInt("texture2", 1);
+	lightingShader.setInt("material.diffuse", 0);
+	lightingShader.setVec3("material.specular", 0.5f, 0.5f, 0.5f);
+	lightingShader.setFloat("material.shininess", 32.0f);
+	lightingShader.setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
+	lightingShader.setVec3("light.diffuse", 0.5f, 0.5f, 0.5f);
+	lightingShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
 	//sourceShader
 	Shader sourceShader("../shader/lightvertex.sd", "../shader/sourcefragment.sd");
 
 	stbi_set_flip_vertically_on_load(true);
-	unsigned int texture1, texture2;
-	glGenTextures(1, &texture1);
-	glGenTextures(1, &texture2);
-	glBindTexture(GL_TEXTURE_2D, texture1);
+	unsigned int texture;
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
@@ -117,27 +120,10 @@ int main()
 	}
 	else
 	{
-		std::cout << "Failed to load texture1" << std::endl;
+		std::cout << "Failed to load texture" << std::endl;
 	}
 	stbi_image_free(data);
 
-	glBindTexture(GL_TEXTURE_2D, texture2);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	data = stbi_load("../resources/awesomeface.png", &width, &height, &nrChannels, 0);
-	if (data)
-	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-	}
-	else
-	{
-		std::cout << "Failed to load texture2" << std::endl;
-	}
-	stbi_image_free(data);
 	//end
 
 	//coordinates
@@ -172,9 +158,8 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture1);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, texture2);
+		glBindTexture(GL_TEXTURE_2D, texture);
+
 
 
 		lightingShader.use();
@@ -186,7 +171,7 @@ int main()
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 		lightingShader.setMat4f("view", view);
 		lightingShader.setMat4f("projection", projection);
-		lightingShader.setVec3("lightPos", lightPos);
+		lightingShader.setVec3("light.position", lightPos);
 		lightingShader.setVec3("viewPos", ourCamera.Position);
 		glm::mat4 lightmodel = glm::mat4(1.0f);
 	    lightPos.x = 1.2f * sin(glfwGetTime()) * 4.0f;

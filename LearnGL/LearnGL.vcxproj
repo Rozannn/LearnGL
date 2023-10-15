@@ -159,6 +159,8 @@
   <ItemGroup>
     <Image Include="..\resources\awesomeface.png" />
     <Image Include="..\resources\container.jpg" />
+    <Image Include="..\resources\container2.jpg" />
+    <Image Include="..\resources\container2_specular.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\shader\fragment.sd" />
